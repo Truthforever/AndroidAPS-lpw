@@ -18,6 +18,7 @@ import app.aaps.plugins.source.DexcomPlugin
 import app.aaps.plugins.source.EversensePlugin
 import app.aaps.plugins.source.GlimpPlugin
 import app.aaps.plugins.source.MM640gPlugin
+import app.aaps.plugins.source.PathedOTAppPlugin
 import app.aaps.plugins.source.PathedSIAppPlugin
 import app.aaps.plugins.source.PathedSinoAppPlugin
 import app.aaps.plugins.source.PoctechPlugin
@@ -34,7 +35,7 @@ open class DataReceiver : DaggerBroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         val bundle = intent.extras ?: return
-        aapsLogger.debug(LTag.DATABASE, "onReceive ${intent.action} ${BundleLogger.log(bundle)}")
+        aapsLogger.debug(LTag.CORE, "onReceive ${intent.action} ${BundleLogger.log(bundle)}")
 
         when (intent.action) {
             Intents.ACTION_NEW_BG_ESTIMATE            ->
@@ -65,6 +66,12 @@ open class DataReceiver : DaggerBroadcastReceiver() {
 
             Intents.NS_EMULATOR                       ->
                 OneTimeWorkRequest.Builder(MM640gPlugin.MM640gWorker::class.java)
+                    .setInputData(Data.Builder().also {
+                        it.copyString("collection", bundle)
+                        it.copyString("data", bundle)
+                    }.build()).build()
+            Intents.OTAPP_BG                       ->
+                OneTimeWorkRequest.Builder(PathedOTAppPlugin.PathedOTAppWorker::class.java)
                     .setInputData(Data.Builder().also {
                         it.copyString("collection", bundle)
                         it.copyString("data", bundle)
